@@ -3,13 +3,18 @@
 
 import json
 from .tool_params import (
+    CreateJudgmentListArgs,
+    CreateLLMJudgmentListArgs,
     CreateSearchConfigurationArgs,
+    CreateUBIJudgmentListArgs,
+    DeleteJudgmentListArgs,
     DeleteSearchConfigurationArgs,
     GetAllocationArgs,
     GetClusterStateArgs,
     GetIndexInfoArgs,
     GetIndexMappingArgs,
     GetIndexStatsArgs,
+    GetJudgmentListArgs,
     GetLongRunningTasksArgs,
     CatNodesArgs,
     GetNodesArgs,
@@ -33,7 +38,11 @@ from .tool_logging import log_tool_error
 from .utils import is_tool_compatible
 from opensearch.helper import (
     convert_search_results_to_csv,
+    create_judgment_list,
+    create_llm_judgment_list,
     create_search_configuration,
+    create_ubi_judgment_list,
+    delete_judgment_list,
     delete_search_configuration,
     get_allocation,
     get_cluster_state,
@@ -41,6 +50,7 @@ from opensearch.helper import (
     get_index_info,
     get_index_mapping,
     get_index_stats,
+    get_judgment_list,
     get_long_running_tasks,
     get_nodes,
     get_nodes_info,
@@ -132,7 +142,7 @@ async def search_index_tool(args: SearchIndexArgs) -> list[dict]:
     try:
         await check_tool_compatibility('SearchIndexTool', args)
         result = await search_index(args)
-        
+
         if args.format.lower() == 'csv':
             csv_result = convert_search_results_to_csv(result)
             return [
@@ -644,6 +654,100 @@ async def delete_query_set_tool(args: DeleteQuerySetArgs) -> list[dict]:
         return log_tool_error('DeleteQuerySetTool', e, 'deleting query set')
 
 
+async def get_judgment_list_tool(args: GetJudgmentListArgs) -> list[dict]:
+    """Tool to retrieve a specific judgment list by ID from the Search Relevance plugin.
+
+    Args:
+        args: GetJudgmentListArgs containing the judgment_id
+
+    Returns:
+        list[dict]: Judgment list details in MCP format
+    """
+    try:
+        await check_tool_compatibility('GetJudgmentListTool', args)
+        result = await get_judgment_list(args)
+        formatted_result = json.dumps(result, separators=(',', ':'))
+        return [{'type': 'text', 'text': f'Judgment list: {args.judgment_id}:\n{formatted_result}'}]
+    except Exception as e:
+        return log_tool_error('GetJudgmentListTool', e, 'retrieving judgment list')
+
+
+async def create_judgment_list_tool(args: CreateJudgmentListArgs) -> list[dict]:
+    """Tool to create a judgment list with manual relevance ratings.
+
+    Args:
+        args: CreateJudgmentListArgs containing name, judgment_ratings (JSON string), and optional description
+
+    Returns:
+        list[dict]: Result of the creation operation in MCP format
+    """
+    try:
+        await check_tool_compatibility('CreateJudgmentListTool', args)
+        result = await create_judgment_list(args)
+        formatted_result = json.dumps(result, separators=(',', ':'))
+        return [{'type': 'text', 'text': f'Judgment created:\n{formatted_result}'}]
+    except Exception as e:
+        return log_tool_error('CreateJudgmentListTool', e, 'creating judgment list')
+
+
+async def create_ubi_judgment_list_tool(args: CreateUBIJudgmentListArgs) -> list[dict]:
+    """Tool to create a judgment list by mining relevance signals from UBI click data.
+
+    Args:
+        args: CreateUBIJudgmentListArgs containing name, click_model, max_rank, and optional date range
+
+    Returns:
+        list[dict]: Result of the creation operation in MCP format
+    """
+    try:
+        await check_tool_compatibility('CreateUBIJudgmentListTool', args)
+        result = await create_ubi_judgment_list(args)
+        formatted_result = json.dumps(result, separators=(',', ':'))
+        return [{'type': 'text', 'text': f'UBI judgment created:\n{formatted_result}'}]
+    except Exception as e:
+        return log_tool_error('CreateUBIJudgmentListTool', e, 'creating UBI judgment')
+
+
+async def delete_judgment_list_tool(args: DeleteJudgmentListArgs) -> list[dict]:
+    """Tool to delete a judgment list by ID from the Search Relevance plugin.
+
+    Args:
+        args: DeleteJudgmentListArgs containing the judgment_id
+
+    Returns:
+        list[dict]: Result of the deletion operation in MCP format
+    """
+    try:
+        await check_tool_compatibility('DeleteJudgmentListTool', args)
+        result = await delete_judgment_list(args)
+        formatted_result = json.dumps(result, separators=(',', ':'))
+        return [{'type': 'text', 'text': f'Judgment list {args.judgment_id} deleted:\n{formatted_result}'}]
+    except Exception as e:
+        return log_tool_error('DeleteJudgmentListTool', e, 'deleting judgment list')
+
+
+async def create_llm_judgment_list_tool(args: CreateLLMJudgmentListArgs) -> list[dict]:
+    """Tool to create a judgment list using an LLM model via the Search Relevance plugin.
+
+    For each query in the query set, the top k documents are retrieved using the
+    specified search configuration and rated by the LLM model.
+
+    Args:
+        args: CreateLLMJudgmentListArgs containing name, query_set_id, search_configuration_id,
+              model_id, size, and optional context_fields
+
+    Returns:
+        list[dict]: Result of the creation operation in MCP format
+    """
+    try:
+        await check_tool_compatibility('CreateLLMJudgmentListTool', args)
+        result = await create_llm_judgment_list(args)
+        formatted_result = json.dumps(result, separators=(',', ':'))
+        return [{'type': 'text', 'text': f'LLM judgment list created:\n{formatted_result}'}]
+    except Exception as e:
+        return log_tool_error('CreateLLMJudgmentListTool', e, 'creating LLM judgment list')
+
+
 async def get_experiment_tool(args: GetExperimentArgs) -> list[dict]:
     """Tool to retrieve a specific experiment by ID from the Search Relevance plugin.
 
@@ -933,5 +1037,54 @@ TOOL_REGISTRY = {
         'args_model': DeleteSearchConfigurationArgs,
         'min_version': '3.1.0',
         'http_methods': 'DELETE',
+    },
+    'GetJudgmentListTool': {
+        'display_name': 'GetJudgmentListTool',
+        'description': 'Retrieves a specific judgment list by ID from OpenSearch using the Search Relevance plugin.',
+        'input_schema': GetJudgmentListArgs.model_json_schema(),
+        'function': get_judgment_list_tool,
+        'args_model': GetJudgmentListArgs,
+        'min_version': '3.1.0',
+        'http_methods': 'GET',
+    },
+    'CreateJudgmentListTool': {
+        'display_name': 'CreateJudgmentListTool',
+        'description': 'Creates a judgment list with manual relevance ratings in OpenSearch using the Search Relevance plugin. '
+        'Accepts a JSON array of query-ratings objects with docId and numeric rating (0–3) per document.',
+        'input_schema': CreateJudgmentListArgs.model_json_schema(),
+        'function': create_judgment_list_tool,
+        'args_model': CreateJudgmentListArgs,
+        'min_version': '3.1.0',
+        'http_methods': 'PUT',
+    },
+    'CreateUBIJudgmentListTool': {
+        'display_name': 'CreateUBIJudgmentListTool',
+        'description': 'Creates a judgment list by mining relevance signals from User Behavior Insights (UBI) click data '
+        'stored in OpenSearch. Requires UBI indices to be populated.',
+        'input_schema': CreateUBIJudgmentListArgs.model_json_schema(),
+        'function': create_ubi_judgment_list_tool,
+        'args_model': CreateUBIJudgmentListArgs,
+        'min_version': '3.1.0',
+        'http_methods': 'PUT',
+    },
+    'DeleteJudgmentListTool': {
+        'display_name': 'DeleteJudgmentListTool',
+        'description': 'Deletes a judgment list by ID from OpenSearch using the Search Relevance plugin.',
+        'input_schema': DeleteJudgmentListArgs.model_json_schema(),
+        'function': delete_judgment_list_tool,
+        'args_model': DeleteJudgmentListArgs,
+        'min_version': '3.1.0',
+        'http_methods': 'DELETE',
+    },
+    'CreateLLMJudgmentListTool': {
+        'display_name': 'CreateLLMJudgmentListTool',
+        'description': 'Creates a judgment list using an LLM model configured in OpenSearch ML Commons. '
+        'For each query in the specified query set, the top k documents are retrieved via the search '
+        'configuration and rated by the LLM for relevance.',
+        'input_schema': CreateLLMJudgmentListArgs.model_json_schema(),
+        'function': create_llm_judgment_list_tool,
+        'args_model': CreateLLMJudgmentListArgs,
+        'min_version': '3.1.0',
+        'http_methods': 'PUT',
     },
 }

@@ -438,6 +438,17 @@ class TestProcessToolFilter:
             'CreateQuerySetTool': {'display_name': 'CreateQuerySetTool', 'http_methods': 'PUT'},
             'SampleQuerySetTool': {'display_name': 'SampleQuerySetTool', 'http_methods': 'POST'},
             'DeleteQuerySetTool': {'display_name': 'DeleteQuerySetTool', 'http_methods': 'DELETE'},
+            'GetJudgmentListTool': {'display_name': 'GetJudgmentListTool', 'http_methods': 'GET'},
+            'CreateJudgmentListTool': {'display_name': 'CreateJudgmentListTool', 'http_methods': 'PUT'},
+            'CreateUBIJudgmentListTool': {
+                'display_name': 'CreateUBIJudgmentListTool',
+                'http_methods': 'PUT',
+            },
+            'CreateLLMJudgmentListTool': {
+                'display_name': 'CreateLLMJudgmentListTool',
+                'http_methods': 'PUT',
+            },
+            'DeleteJudgmentListTool': {'display_name': 'DeleteJudgmentListTool', 'http_methods': 'DELETE'},
             'GetExperimentTool': {'display_name': 'GetExperimentTool', 'http_methods': 'GET'},
             'CreateExperimentTool': {'display_name': 'CreateExperimentTool', 'http_methods': 'PUT'},
             'DeleteExperimentTool': {'display_name': 'DeleteExperimentTool', 'http_methods': 'DELETE'},
@@ -453,6 +464,11 @@ class TestProcessToolFilter:
         assert 'CreateQuerySetTool' not in registry
         assert 'SampleQuerySetTool' not in registry
         assert 'DeleteQuerySetTool' not in registry
+        assert 'GetJudgmentListTool' not in registry
+        assert 'CreateJudgmentListTool' not in registry
+        assert 'CreateUBIJudgmentListTool' not in registry
+        assert 'CreateLLMJudgmentListTool' not in registry
+        assert 'DeleteJudgmentListTool' not in registry
         assert 'GetExperimentTool' not in registry
         assert 'CreateExperimentTool' not in registry
         assert 'DeleteExperimentTool' not in registry
@@ -477,6 +493,17 @@ class TestProcessToolFilter:
             'CreateQuerySetTool': {'display_name': 'CreateQuerySetTool', 'http_methods': 'PUT'},
             'SampleQuerySetTool': {'display_name': 'SampleQuerySetTool', 'http_methods': 'POST'},
             'DeleteQuerySetTool': {'display_name': 'DeleteQuerySetTool', 'http_methods': 'DELETE'},
+            'GetJudgmentListTool': {'display_name': 'GetJudgmentListTool', 'http_methods': 'GET'},
+            'CreateJudgmentListTool': {'display_name': 'CreateJudgmentListTool', 'http_methods': 'PUT'},
+            'CreateUBIJudgmentListTool': {
+                'display_name': 'CreateUBIJudgmentListTool',
+                'http_methods': 'PUT',
+            },
+            'CreateLLMJudgmentListTool': {
+                'display_name': 'CreateLLMJudgmentListTool',
+                'http_methods': 'PUT',
+            },
+            'DeleteJudgmentListTool': {'display_name': 'DeleteJudgmentListTool', 'http_methods': 'DELETE'},
             'GetExperimentTool': {'display_name': 'GetExperimentTool', 'http_methods': 'GET'},
             'CreateExperimentTool': {'display_name': 'CreateExperimentTool', 'http_methods': 'PUT'},
             'DeleteExperimentTool': {'display_name': 'DeleteExperimentTool', 'http_methods': 'DELETE'},
@@ -495,6 +522,11 @@ class TestProcessToolFilter:
         assert 'CreateQuerySetTool' in registry
         assert 'SampleQuerySetTool' in registry
         assert 'DeleteQuerySetTool' in registry
+        assert 'GetJudgmentListTool' in registry
+        assert 'CreateJudgmentListTool' in registry
+        assert 'CreateUBIJudgmentListTool' in registry
+        assert 'CreateLLMJudgmentListTool' in registry
+        assert 'DeleteJudgmentListTool' in registry
         assert 'GetExperimentTool' in registry
         assert 'CreateExperimentTool' in registry
         assert 'DeleteExperimentTool' in registry

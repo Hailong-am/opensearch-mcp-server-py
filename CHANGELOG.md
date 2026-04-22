@@ -14,6 +14,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 - Fix `SearchIndexTool` ignoring `size=0`, causing aggregation-only queries to always return 10 hits ([#217](https://github.com/opensearch-project/opensearch-mcp-server-py/pull/217))
 - Infer default TCP port from URL scheme (`http` → 80, `https` → 443) when no port is specified, instead of relying on implicit 9200 behavior ([#170](https://github.com/opensearch-project/opensearch-mcp-server-py/issues/170))
+- Move skills tools to disabled-by-default category([#225](https://github.com/opensearch-project/opensearch-mcp-server-py/pull/225/))
 
 ### Removed
 

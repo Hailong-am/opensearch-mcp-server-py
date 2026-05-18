@@ -5,6 +5,7 @@ import logging
 import os
 import pytest
 import pytest_asyncio
+from packaging.version import Version
 from integration_tests.framework.aws_helpers import (
     AWSProfileManager,
     build_header_auth_headers,
@@ -128,6 +129,34 @@ async def seed_test_index():
         logger.info(f'Deleted test index: {TEST_INDEX}')
     except Exception as e:
         logger.warning(f'Failed to delete test index {TEST_INDEX}: {e}')
+
+
+# ---------------------------------------------------------------------------
+# Cluster version detection & requires_version marker
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture(scope='session')
+def cluster_version():
+    """Detect the OpenSearch cluster version (session-scoped, runs once)."""
+    client = _create_os_client()
+    try:
+        info = client.info()
+        version_str = info['version']['number']
+        return Version(version_str)
+    finally:
+        client.close()
+
+
+@pytest.fixture(autouse=True)
+def _check_requires_version(request, cluster_version):
+    """Skip tests marked with @pytest.mark.requires_version if cluster is too old."""
+    marker = request.node.get_closest_marker('requires_version')
+    if marker is None:
+        return
+    required = Version(marker.args[0])
+    if cluster_version < required:
+        pytest.skip(f'Requires OpenSearch {required}+, cluster is {cluster_version}')
 
 
 # ---------------------------------------------------------------------------

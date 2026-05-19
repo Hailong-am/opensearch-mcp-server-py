@@ -6,8 +6,9 @@ import logging
 import os
 import re
 import yaml
-from typing import Dict, Any
 from tools.tools import TOOL_REGISTRY as default_tool_registry
+from typing import Any, Dict
+
 
 # Constants for field names
 DISPLAY_NAME_STRING = 'display_name'
@@ -20,8 +21,7 @@ DISPLAY_NAME_PATTERN = r'^[a-zA-Z0-9_-]+$'
 
 
 def is_valid_display_name_pattern(name: str) -> bool:
-    """
-    Check if a display name follows the required pattern.
+    """Check if a display name follows the required pattern.
 
     :param name: The name to validate
     :return: True if valid, False otherwise
@@ -89,8 +89,7 @@ def _put_nested_dict(nested: dict, keys: list[str], value: Any) -> dict:
 
 
 def parse_cli_to_nested_config(cli_tool_overrides: Dict[str, str]) -> Dict[str, Dict[str, Any]]:
-    """
-    Parse generic CLI overrides of the form 'tool.<ToolName>.<path>=<value>' into a nested dict.
+    """Parse generic CLI overrides of the form 'tool.<ToolName>.<path>=<value>' into a nested dict.
 
     Examples:
     - tool.ListIndexTool.http_methods=POST
@@ -122,8 +121,7 @@ def parse_cli_to_nested_config(cli_tool_overrides: Dict[str, str]) -> Dict[str, 
 def _validate_config(
     config: Dict[str, Dict[str, Any]], reference_registry: Dict[str, Any]
 ) -> None:
-    """
-    Validate the configuration.
+    """Validate the configuration.
 
     Checks:
     1. All tool names exist in the default registry
@@ -194,8 +192,7 @@ def _validate_config(
 def _apply_validated_configs(
     custom_registry: Dict[str, Any], configs: Dict[str, Dict[str, Any]]
 ) -> None:
-    """
-    Apply validated configurations to the registry.
+    """Apply validated configurations to the registry.
 
     :param custom_registry: The registry to modify
     :param configs: Dictionary of tool names and their custom configurations
@@ -237,11 +234,8 @@ def _apply_validated_configs(
                 tool_info[field_name] = field_value
 
 
-def _apply_memory_container_defaults(
-    custom_registry: Dict[str, Any], container_id: str
-) -> None:
-    """
-    Set memory_container_id as a default in the input_schema of all agentic memory tools.
+def _apply_memory_container_defaults(custom_registry: Dict[str, Any], container_id: str) -> None:
+    """Set memory_container_id as a default in the input_schema of all agentic memory tools.
 
     This modifies the JSON schema so that:
     1. MCP clients see the default value (and the field is no longer required)
@@ -282,8 +276,7 @@ def apply_custom_tool_config(
     config_file_path: str,
     cli_tool_overrides: Dict[str, str],
 ) -> Dict[str, Any]:
-    """
-    Apply custom configurations to the tool registry from YAML file and command-line arguments.
+    """Apply custom configurations to the tool registry from YAML file and command-line arguments.
 
     Priority order:
     1. Config file settings (if config file is provided, CLI is completely ignored)
@@ -356,10 +349,14 @@ def get_memory_container_id_from_config(config_file_path: str = '') -> str:
                     if isinstance(agentic_memory_config, dict):
                         container_id = agentic_memory_config.get('memory_container_id', '')
                         if container_id:
-                            logging.info(f'Using memory_container_id from config file: {container_id}')
+                            logging.info(
+                                f'Using memory_container_id from config file: {container_id}'
+                            )
                             return container_id
         except Exception as e:
-            logging.debug(f'Could not load memory_container_id from config file {config_file_path}: {e}')
+            logging.debug(
+                f'Could not load memory_container_id from config file {config_file_path}: {e}'
+            )
 
     container_id = os.getenv('OPENSEARCH_MEMORY_CONTAINER_ID', '')
     if container_id:

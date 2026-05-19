@@ -1,15 +1,14 @@
 # Copyright OpenSearch Contributors
 # SPDX-License-Identifier: Apache-2.0
 
-import json
-import logging
 import csv
 import io
+import json
+import logging
 import math
 import os
 from decimal import Decimal
 from semver import Version
-from tools.tool_params import *
 from tools.agentic_memory.params import (
     AddAgenticMemoriesArgs,
     CreateAgenticMemorySessionArgs,
@@ -19,6 +18,43 @@ from tools.agentic_memory.params import (
     SearchAgenticMemoryArgs,
     UpdateAgenticMemoryArgs,
 )
+from tools.tool_params import (
+    CatNodesArgs,
+    CreateExperimentArgs,
+    CreateJudgmentListArgs,
+    CreateLLMJudgmentListArgs,
+    CreateQuerySetArgs,
+    CreateSearchConfigurationArgs,
+    CreateUBIJudgmentListArgs,
+    DeleteExperimentArgs,
+    DeleteJudgmentListArgs,
+    DeleteQuerySetArgs,
+    DeleteSearchConfigurationArgs,
+    GetAllocationArgs,
+    GetClusterStateArgs,
+    GetExperimentArgs,
+    GetIndexInfoArgs,
+    GetIndexMappingArgs,
+    GetIndexStatsArgs,
+    GetJudgmentListArgs,
+    GetLongRunningTasksArgs,
+    GetNodesArgs,
+    GetNodesHotThreadsArgs,
+    GetQueryInsightsArgs,
+    GetQuerySetArgs,
+    GetSearchConfigurationArgs,
+    GetSegmentsArgs,
+    GetShardsArgs,
+    ListIndicesArgs,
+    SampleQuerySetArgs,
+    SearchExperimentsArgs,
+    SearchIndexArgs,
+    SearchJudgmentsArgs,
+    SearchQuerySetsArgs,
+    SearchSearchConfigurationsArgs,
+    baseToolArgs,
+)
+from typing import Any, Dict
 from urllib.parse import quote
 
 
@@ -29,6 +65,7 @@ logger = logging.getLogger(__name__)
 # List all the helper functions, these functions perform a single rest call to opensearch
 # these functions will be used in tools folder to eventually write more complex tools
 async def list_indices(args: ListIndicesArgs) -> json:
+    """List indices matching the given pattern."""
     from .client import get_opensearch_client
 
     async with get_opensearch_client(args) as client:
@@ -55,6 +92,7 @@ async def get_index(args: ListIndicesArgs) -> json:
 
 
 async def get_index_mapping(args: GetIndexMappingArgs) -> json:
+    """Get the mapping for a specific index."""
     from .client import get_opensearch_client
 
     async with get_opensearch_client(args) as client:
@@ -63,6 +101,7 @@ async def get_index_mapping(args: GetIndexMappingArgs) -> json:
 
 
 async def search_index(args: SearchIndexArgs) -> json:
+    """Execute a search query against an index."""
     from .client import get_opensearch_client
     from tools.tools import TOOL_REGISTRY
 
@@ -90,6 +129,7 @@ async def search_index(args: SearchIndexArgs) -> json:
 
 
 async def get_shards(args: GetShardsArgs) -> json:
+    """Get shard information for an index."""
     from .client import get_opensearch_client
 
     async with get_opensearch_client(args) as client:
@@ -342,7 +382,6 @@ async def create_query_set(args: CreateQuerySetArgs) -> json:
         json: Result of the creation operation with query set ID
     """
     import json as _json
-
     from .client import get_opensearch_client
 
     queries = _json.loads(args.queries) if isinstance(args.queries, str) else args.queries
@@ -385,7 +424,8 @@ async def sample_query_set(args: SampleQuerySetArgs) -> json:
 
     body = {
         'name': args.name,
-        'description': args.description or f'Query set: {args.name} ({args.sampling}, size={args.query_set_size})',
+        'description': args.description
+        or f'Query set: {args.name} ({args.sampling}, size={args.query_set_size})',
         'sampling': args.sampling,
         'querySetSize': args.query_set_size,
     }
@@ -481,11 +521,16 @@ async def create_experiment(args: CreateExperimentArgs) -> json:
         else args.search_configuration_ids
     )
     if not isinstance(search_configuration_ids, list):
-        raise ValueError('search_configuration_ids must be a JSON array of configuration ID strings')
+        raise ValueError(
+            'search_configuration_ids must be a JSON array of configuration ID strings'
+        )
 
     if args.experiment_type == 'PAIRWISE_COMPARISON' and len(search_configuration_ids) != 2:
         raise ValueError('PAIRWISE_COMPARISON requires exactly 2 search configuration IDs')
-    if args.experiment_type in ('POINTWISE_EVALUATION', 'HYBRID_OPTIMIZER') and len(search_configuration_ids) != 1:
+    if (
+        args.experiment_type in ('POINTWISE_EVALUATION', 'HYBRID_OPTIMIZER')
+        and len(search_configuration_ids) != 1
+    ):
         raise ValueError(f'{args.experiment_type} requires exactly 1 search configuration ID')
 
     body: dict = {
@@ -508,7 +553,9 @@ async def create_experiment(args: CreateExperimentArgs) -> json:
             else args.judgment_list_ids
         )
         if not isinstance(judgment_list_ids, list) or len(judgment_list_ids) == 0:
-            raise ValueError('judgment_list_ids must be a non-empty JSON array of judgment list ID strings')
+            raise ValueError(
+                'judgment_list_ids must be a non-empty JSON array of judgment list ID strings'
+            )
         body['judgmentList'] = judgment_list_ids
 
     async with get_opensearch_client(args) as client:
@@ -592,7 +639,7 @@ def convert_search_results_to_csv(search_results: dict) -> str:
         str: CSV formatted string of the search results
     """
     if not search_results:
-        return "No search results to convert"
+        return 'No search results to convert'
 
     has_hits = 'hits' in search_results and search_results['hits']['hits']
     has_aggregations = 'aggregations' in search_results
@@ -609,9 +656,9 @@ def convert_search_results_to_csv(search_results: dict) -> str:
     if has_hits and has_aggregations:
         hits_csv = _convert_hits_to_csv(search_results['hits']['hits'])
         aggregations_json = json.dumps(search_results['aggregations'], separators=(',', ':'))
-        return f"SEARCH HITS:\n{hits_csv}\n\nAGGREGATIONS:\n{aggregations_json}"
+        return f'SEARCH HITS:\n{hits_csv}\n\nAGGREGATIONS:\n{aggregations_json}'
 
-    return "No search results to convert"
+    return 'No search results to convert'
 
 
 def _convert_hits_to_csv(hits: list) -> str:
@@ -624,7 +671,7 @@ def _convert_hits_to_csv(hits: list) -> str:
         str: CSV formatted string
     """
     if not hits:
-        return "No documents found in search results"
+        return 'No documents found in search results'
 
     # Extract all unique field names from all documents (flattened)
     all_fields = set()
@@ -635,7 +682,7 @@ def _convert_hits_to_csv(hits: list) -> str:
         all_fields.update(['_index', '_id', '_score'])
 
     # Convert to sorted list for consistent column order
-    fieldnames = sorted(list(all_fields))
+    fieldnames = sorted(all_fields)
 
     # Create CSV in memory
     output = io.StringIO()
@@ -947,13 +994,13 @@ def plain_float(value):
         return None
 
     d = Decimal(str(value)).normalize()
-    s = format(d, "f")
-    if "." in s:
-        s = s.rstrip("0").rstrip(".")
-    if s == "" or s == "-":
-        s = "0"
+    s = format(d, 'f')
+    if '.' in s:
+        s = s.rstrip('0').rstrip('.')
+    if s == '' or s == '-':
+        s = '0'
 
-    if "." not in s:
+    if '.' not in s:
         return int(s)
     else:
         return float(s)
@@ -1147,7 +1194,9 @@ async def create_llm_judgment_list(args: CreateLLMJudgmentListArgs) -> json:
         else args.context_fields
     )
     if not isinstance(context_fields, list):
-        raise ValueError('context_fields must be a JSON array of field name strings, e.g. ["title", "description"]')
+        raise ValueError(
+            'context_fields must be a JSON array of field name strings, e.g. ["title", "description"]'
+        )
 
     body = {
         'name': args.name,
@@ -1199,7 +1248,7 @@ def validate_json_string(value: str) -> None:
         json.loads(value)
     except json.JSONDecodeError as e:
         raise ValueError(
-            f"query is not valid JSON: {e.msg} (line {e.lineno}, col {e.colno})"
+            f'query is not valid JSON: {e.msg} (line {e.lineno}, col {e.colno})'
         ) from e
 
 

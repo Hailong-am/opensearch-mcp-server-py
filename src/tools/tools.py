@@ -2,55 +2,64 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import json
+from .agentic_memory.actions import AGENTIC_MEMORY_TOOLS_REGISTRY
+from .generic_api_tool import GenericOpenSearchApiArgs, generic_opensearch_api_tool
+from .skills_tools import SKILLS_TOOLS_REGISTRY
+from .tool_logging import log_tool_error
 from .tool_params import (
+    CatNodesArgs,
+    CreateExperimentArgs,
     CreateJudgmentListArgs,
     CreateLLMJudgmentListArgs,
+    CreateQuerySetArgs,
     CreateSearchConfigurationArgs,
     CreateUBIJudgmentListArgs,
+    DeleteExperimentArgs,
     DeleteJudgmentListArgs,
+    DeleteQuerySetArgs,
     DeleteSearchConfigurationArgs,
     GetAllocationArgs,
     GetClusterStateArgs,
+    GetExperimentArgs,
     GetIndexInfoArgs,
     GetIndexMappingArgs,
     GetIndexStatsArgs,
     GetJudgmentListArgs,
     GetLongRunningTasksArgs,
-    CatNodesArgs,
     GetNodesArgs,
     GetNodesHotThreadsArgs,
     GetQueryInsightsArgs,
+    GetQuerySetArgs,
     GetSearchConfigurationArgs,
     GetSegmentsArgs,
     GetShardsArgs,
     ListClustersArgs,
     ListIndicesArgs,
-    SearchIndexArgs,
-    GetQuerySetArgs,
-    CreateQuerySetArgs,
     SampleQuerySetArgs,
-    DeleteQuerySetArgs,
-    GetExperimentArgs,
-    CreateExperimentArgs,
-    DeleteExperimentArgs,
+    SearchExperimentsArgs,
+    SearchIndexArgs,
+    SearchJudgmentsArgs,
     SearchQuerySetsArgs,
     SearchSearchConfigurationsArgs,
-    SearchJudgmentsArgs,
-    SearchExperimentsArgs,
     baseToolArgs,
 )
-from .tool_logging import log_tool_error
 from .utils import format_json, is_tool_compatible
+from mcp_server_opensearch.clusters_information import cluster_registry
 from opensearch.helper import (
     convert_search_results_to_csv,
+    create_experiment,
     create_judgment_list,
     create_llm_judgment_list,
+    create_query_set,
     create_search_configuration,
     create_ubi_judgment_list,
+    delete_experiment,
     delete_judgment_list,
+    delete_query_set,
     delete_search_configuration,
     get_allocation,
     get_cluster_state,
+    get_experiment,
     get_index,
     get_index_info,
     get_index_mapping,
@@ -62,22 +71,17 @@ from opensearch.helper import (
     get_nodes_info,
     get_opensearch_version,
     get_query_insights,
+    get_query_set,
     get_search_configuration,
     get_segments,
     get_shards,
     list_indices,
-    search_index,
-    get_query_set,
-    create_query_set,
     sample_query_set,
-    delete_query_set,
-    get_experiment,
-    create_experiment,
-    delete_experiment,
+    search_experiments,
+    search_index,
+    search_judgments,
     search_query_sets,
     search_search_configurations,
-    search_judgments,
-    search_experiments,
 )
 from .agentic_memory.actions import AGENTIC_MEMORY_TOOLS_REGISTRY
 from .skills_tools import SKILLS_TOOLS_REGISTRY
@@ -86,6 +90,7 @@ from mcp_server_opensearch.clusters_information import cluster_registry
 
 
 async def list_clusters_tool(args: ListClustersArgs) -> list[dict]:
+    """List all available OpenSearch clusters."""
     try:
         cluster_names = list(cluster_registry.keys())
         formatted_names = json.dumps(cluster_names, separators=(',', ':'))
@@ -95,6 +100,7 @@ async def list_clusters_tool(args: ListClustersArgs) -> list[dict]:
 
 
 async def check_tool_compatibility(tool_name: str, args: baseToolArgs = None):
+    """Check if a tool is compatible with the current OpenSearch version."""
     opensearch_version = await get_opensearch_version(args)
     if not is_tool_compatible(opensearch_version, TOOL_REGISTRY[tool_name]):
         tool_display_name = TOOL_REGISTRY[tool_name].get('display_name', tool_name)
@@ -119,6 +125,7 @@ async def check_tool_compatibility(tool_name: str, args: baseToolArgs = None):
 
 
 async def list_indices_tool(args: ListIndicesArgs) -> list[dict]:
+    """List indices with optional detailed information."""
     try:
         await check_tool_compatibility('ListIndexTool', args)
 
@@ -154,6 +161,7 @@ async def list_indices_tool(args: ListIndicesArgs) -> list[dict]:
 
 
 async def get_index_mapping_tool(args: GetIndexMappingArgs) -> list[dict]:
+    """Get the mapping for a specific index."""
     try:
         await check_tool_compatibility('IndexMappingTool', args)
         mapping = await get_index_mapping(args)
@@ -165,6 +173,7 @@ async def get_index_mapping_tool(args: GetIndexMappingArgs) -> list[dict]:
 
 
 async def search_index_tool(args: SearchIndexArgs) -> list[dict]:
+    """Search an index using query DSL."""
     try:
         await check_tool_compatibility('SearchIndexTool', args)
         result = await search_index(args)
@@ -190,6 +199,7 @@ async def search_index_tool(args: SearchIndexArgs) -> list[dict]:
 
 
 async def get_shards_tool(args: GetShardsArgs) -> list[dict]:
+    """Get shard information for an index."""
     try:
         await check_tool_compatibility('GetShardsTool', args)
         result = await get_shards(args)
@@ -941,8 +951,6 @@ async def search_experiments_tool(args: SearchExperimentsArgs) -> list[dict]:
         return [{'type': 'text', 'text': f'Experiment search results:\n{formatted_result}'}]
     except Exception as e:
         return log_tool_error('SearchExperimentsTool', e, 'searching experiments')
-
-from .generic_api_tool import GenericOpenSearchApiArgs, generic_opensearch_api_tool
 
 
 # Registry of available OpenSearch tools with their metadata

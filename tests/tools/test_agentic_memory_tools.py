@@ -56,14 +56,15 @@ class TestAgenticMemoryTools:
 
         # Set environment variable for agentic memory tools registration
         import os
+
         os.environ['OPENSEARCH_MEMORY_CONTAINER_ID'] = 'test-container-id'
 
         # Import after patching to ensure fresh imports
         from tools.agentic_memory.actions import (
             add_agentic_memories_tool,
             create_agentic_memory_session_tool,
-            delete_agentic_memory_by_query_tool,
             delete_agentic_memory_by_id_tool,
+            delete_agentic_memory_by_query_tool,
             get_agentic_memory_tool,
             search_agentic_memory_tool,
             update_agentic_memory_tool,
@@ -101,6 +102,7 @@ class TestAgenticMemoryTools:
 
         # Clean up environment variable
         import os
+
         if 'OPENSEARCH_MEMORY_CONTAINER_ID' in os.environ:
             del os.environ['OPENSEARCH_MEMORY_CONTAINER_ID']
 

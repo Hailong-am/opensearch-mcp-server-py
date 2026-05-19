@@ -165,8 +165,7 @@ class TestGetTools:
         assert 'SearchIndexTool' not in result
         assert 'param1' in result['ListIndexTool']['input_schema']['properties']
         assert (
-            'opensearch_cluster_name'
-            not in result['ListIndexTool']['input_schema']['properties']
+            'opensearch_cluster_name' not in result['ListIndexTool']['input_schema']['properties']
         )
 
     @pytest.mark.asyncio
@@ -237,7 +236,9 @@ class TestGetTools:
         )
 
     @pytest.mark.asyncio
-    async def test_get_tools_skills_tools_version_filtering(self, mock_tool_registry, mock_patches):
+    async def test_get_tools_skills_tools_version_filtering(
+        self, mock_tool_registry, mock_patches
+    ):
         """Test that skills tools are filtered based on version compatibility."""
         mock_get_version, mock_is_compatible = mock_patches
 
@@ -262,9 +263,13 @@ class TestGetTools:
         assert 'SearchIndexTool' in result
 
     @pytest.mark.asyncio
-    async def test_get_tools_skills_tools_compatible_version(self, mock_tool_registry, mock_patches):
-        """Test that skills tools are excluded by default even when version is compatible,
-        since they belong to the 'skills' category which is not enabled by default."""
+    async def test_get_tools_skills_tools_compatible_version(
+        self, mock_tool_registry, mock_patches
+    ):
+        """Test that skills tools are excluded by default even when version is compatible.
+
+        Since they belong to the 'skills' category which is not enabled by default.
+        """
         mock_get_version, mock_is_compatible = mock_patches
 
         # Setup mocks - simulate OpenSearch 3.5.0 (above skills tools min version 3.3.0)
@@ -362,7 +367,7 @@ class TestProcessToolFilter:
         assert 'ExplainTool' not in self.tool_registry
 
     def test_process_tool_filter_rename_tool(self):
-        """Test processing tool filtering with tool renaming feature"""
+        """Test processing tool filtering with tool renaming feature."""
         process_tool_filter(
             tool_registry=self.tool_registry,
             enabled_tools='ModelListTool',
@@ -383,7 +388,7 @@ class TestProcessToolFilter:
         assert 'ModelListTool' not in self.tool_registry
 
     def test_core_tools_default(self):
-        """Test core tools enabled by default"""
+        """Test core tools enabled by default."""
         process_tool_filter(
             tool_registry=self.tool_registry,
             allow_write=True,
@@ -398,7 +403,7 @@ class TestProcessToolFilter:
         assert 'ListModelTool' not in self.tool_registry
 
     def test_disable_core_tools(self):
-        """Test disable core tools categories, which is enabled by default"""
+        """Test disable core tools categories, which is enabled by default."""
         process_tool_filter(
             tool_registry=self.tool_registry,
             disabled_categories='core_tools',
@@ -411,7 +416,7 @@ class TestProcessToolFilter:
         assert 'ExplainTool' not in self.tool_registry
 
     def test_skills_category_is_not_enabled_by_default(self):
-        """skills tools are not enabled unless the category is explicitly enabled."""
+        """Skills tools are not enabled unless the category is explicitly enabled."""
         registry = {
             'ListIndexTool': {'display_name': 'ListIndexTool', 'http_methods': 'GET'},
             'DataDistributionTool': {
@@ -430,7 +435,7 @@ class TestProcessToolFilter:
         assert 'LogPatternAnalysisTool' not in registry
 
     def test_skills_category_can_be_enabled(self):
-        """skills tools are exposed when the category is explicitly enabled."""
+        """Skills tools are exposed when the category is explicitly enabled."""
         registry = {
             'ListIndexTool': {'display_name': 'ListIndexTool', 'http_methods': 'GET'},
             'DataDistributionTool': {
@@ -494,7 +499,10 @@ class TestProcessToolFilter:
             'SampleQuerySetTool': {'display_name': 'SampleQuerySetTool', 'http_methods': 'POST'},
             'DeleteQuerySetTool': {'display_name': 'DeleteQuerySetTool', 'http_methods': 'DELETE'},
             'GetJudgmentListTool': {'display_name': 'GetJudgmentListTool', 'http_methods': 'GET'},
-            'CreateJudgmentListTool': {'display_name': 'CreateJudgmentListTool', 'http_methods': 'PUT'},
+            'CreateJudgmentListTool': {
+                'display_name': 'CreateJudgmentListTool',
+                'http_methods': 'PUT',
+            },
             'CreateUBIJudgmentListTool': {
                 'display_name': 'CreateUBIJudgmentListTool',
                 'http_methods': 'PUT',
@@ -503,14 +511,35 @@ class TestProcessToolFilter:
                 'display_name': 'CreateLLMJudgmentListTool',
                 'http_methods': 'PUT',
             },
-            'DeleteJudgmentListTool': {'display_name': 'DeleteJudgmentListTool', 'http_methods': 'DELETE'},
+            'DeleteJudgmentListTool': {
+                'display_name': 'DeleteJudgmentListTool',
+                'http_methods': 'DELETE',
+            },
             'GetExperimentTool': {'display_name': 'GetExperimentTool', 'http_methods': 'GET'},
-            'CreateExperimentTool': {'display_name': 'CreateExperimentTool', 'http_methods': 'PUT'},
-            'DeleteExperimentTool': {'display_name': 'DeleteExperimentTool', 'http_methods': 'DELETE'},
-            'SearchQuerySetsTool': {'display_name': 'SearchQuerySetsTool', 'http_methods': 'GET, POST'},
-            'SearchSearchConfigurationsTool': {'display_name': 'SearchSearchConfigurationsTool', 'http_methods': 'GET, POST'},
-            'SearchJudgmentsTool': {'display_name': 'SearchJudgmentsTool', 'http_methods': 'GET, POST'},
-            'SearchExperimentsTool': {'display_name': 'SearchExperimentsTool', 'http_methods': 'GET, POST'},
+            'CreateExperimentTool': {
+                'display_name': 'CreateExperimentTool',
+                'http_methods': 'PUT',
+            },
+            'DeleteExperimentTool': {
+                'display_name': 'DeleteExperimentTool',
+                'http_methods': 'DELETE',
+            },
+            'SearchQuerySetsTool': {
+                'display_name': 'SearchQuerySetsTool',
+                'http_methods': 'GET, POST',
+            },
+            'SearchSearchConfigurationsTool': {
+                'display_name': 'SearchSearchConfigurationsTool',
+                'http_methods': 'GET, POST',
+            },
+            'SearchJudgmentsTool': {
+                'display_name': 'SearchJudgmentsTool',
+                'http_methods': 'GET, POST',
+            },
+            'SearchExperimentsTool': {
+                'display_name': 'SearchExperimentsTool',
+                'http_methods': 'GET, POST',
+            },
         }
         process_tool_filter(tool_registry=registry, allow_write=True)
 
@@ -557,7 +586,10 @@ class TestProcessToolFilter:
             'SampleQuerySetTool': {'display_name': 'SampleQuerySetTool', 'http_methods': 'POST'},
             'DeleteQuerySetTool': {'display_name': 'DeleteQuerySetTool', 'http_methods': 'DELETE'},
             'GetJudgmentListTool': {'display_name': 'GetJudgmentListTool', 'http_methods': 'GET'},
-            'CreateJudgmentListTool': {'display_name': 'CreateJudgmentListTool', 'http_methods': 'PUT'},
+            'CreateJudgmentListTool': {
+                'display_name': 'CreateJudgmentListTool',
+                'http_methods': 'PUT',
+            },
             'CreateUBIJudgmentListTool': {
                 'display_name': 'CreateUBIJudgmentListTool',
                 'http_methods': 'PUT',
@@ -566,14 +598,35 @@ class TestProcessToolFilter:
                 'display_name': 'CreateLLMJudgmentListTool',
                 'http_methods': 'PUT',
             },
-            'DeleteJudgmentListTool': {'display_name': 'DeleteJudgmentListTool', 'http_methods': 'DELETE'},
+            'DeleteJudgmentListTool': {
+                'display_name': 'DeleteJudgmentListTool',
+                'http_methods': 'DELETE',
+            },
             'GetExperimentTool': {'display_name': 'GetExperimentTool', 'http_methods': 'GET'},
-            'CreateExperimentTool': {'display_name': 'CreateExperimentTool', 'http_methods': 'PUT'},
-            'DeleteExperimentTool': {'display_name': 'DeleteExperimentTool', 'http_methods': 'DELETE'},
-            'SearchQuerySetsTool': {'display_name': 'SearchQuerySetsTool', 'http_methods': 'GET, POST'},
-            'SearchSearchConfigurationsTool': {'display_name': 'SearchSearchConfigurationsTool', 'http_methods': 'GET, POST'},
-            'SearchJudgmentsTool': {'display_name': 'SearchJudgmentsTool', 'http_methods': 'GET, POST'},
-            'SearchExperimentsTool': {'display_name': 'SearchExperimentsTool', 'http_methods': 'GET, POST'},
+            'CreateExperimentTool': {
+                'display_name': 'CreateExperimentTool',
+                'http_methods': 'PUT',
+            },
+            'DeleteExperimentTool': {
+                'display_name': 'DeleteExperimentTool',
+                'http_methods': 'DELETE',
+            },
+            'SearchQuerySetsTool': {
+                'display_name': 'SearchQuerySetsTool',
+                'http_methods': 'GET, POST',
+            },
+            'SearchSearchConfigurationsTool': {
+                'display_name': 'SearchSearchConfigurationsTool',
+                'http_methods': 'GET, POST',
+            },
+            'SearchJudgmentsTool': {
+                'display_name': 'SearchJudgmentsTool',
+                'http_methods': 'GET, POST',
+            },
+            'SearchExperimentsTool': {
+                'display_name': 'SearchExperimentsTool',
+                'http_methods': 'GET, POST',
+            },
         }
         process_tool_filter(
             tool_registry=registry,

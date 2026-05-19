@@ -59,7 +59,9 @@ async def get_agentic_memory_tool(args: GetAgenticMemoryArgs) -> list[dict]:
         await check_tool_compatibility('GetAgenticMemoryTool', args)
         result = await get_agentic_memory(args)
         formatted = json.dumps(result, separators=(',', ':'))
-        return [{'type': 'text', 'text': f'Memory {args.id} ({args.memory_type.value}):\n{formatted}'}]
+        return [
+            {'type': 'text', 'text': f'Memory {args.id} ({args.memory_type.value}):\n{formatted}'}
+        ]
     except Exception as e:
         return log_tool_error('GetAgenticMemoryTool', e, 'retrieving memory')
 
@@ -115,7 +117,9 @@ async def search_agentic_memory_tool(args: SearchAgenticMemoryArgs) -> list[dict
         await check_tool_compatibility('SearchAgenticMemoryTool', args)
         result = await search_agentic_memory(args)
         formatted = json.dumps(result, separators=(',', ':'))
-        return [{'type': 'text', 'text': f'Search results ({args.memory_type.value}):\n{formatted}'}]
+        return [
+            {'type': 'text', 'text': f'Search results ({args.memory_type.value}):\n{formatted}'}
+        ]
     except Exception as e:
         return log_tool_error('SearchAgenticMemoryTool', e, 'searching memory')
 

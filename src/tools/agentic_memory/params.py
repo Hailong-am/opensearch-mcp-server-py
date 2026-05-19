@@ -36,6 +36,7 @@ ERR_EMBEDDING_DIMENSION_REQUIRED = 'embedding_dimension_required'
 
 class MessageContentItem(BaseModel):
     """Schema for the content part of a message.
+
     Used for strong typing in 'messages' fields.
     """
 
@@ -47,6 +48,7 @@ class MessageContentItem(BaseModel):
 
 class MessageItem(BaseModel):
     """Schema for a single message in 'messages' field.
+
     Used for strong typing.
     """
 

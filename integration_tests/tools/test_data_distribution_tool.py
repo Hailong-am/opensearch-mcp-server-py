@@ -7,7 +7,7 @@ from integration_tests.framework.constants import TEST_INDEX
 
 
 @pytest.mark.tools
-@pytest.mark.requires_version('3.3.0')
+@pytest.mark.requires_ml_tool('DataDistributionTool')
 class TestDataDistributionTool:
     """Tests for DataDistributionTool (ML skills, requires OpenSearch 3.3+)."""
 

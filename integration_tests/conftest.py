@@ -5,7 +5,6 @@ import logging
 import os
 import pytest
 import pytest_asyncio
-from packaging.version import Version
 from integration_tests.framework.aws_helpers import (
     AWSProfileManager,
     build_header_auth_headers,
@@ -132,31 +131,50 @@ async def seed_test_index():
 
 
 # ---------------------------------------------------------------------------
-# Cluster version detection & requires_version marker
+# ML tool availability detection & requires_ml_tool marker
 # ---------------------------------------------------------------------------
+
+_ml_tool_availability_cache: dict = {}
 
 
 @pytest.fixture(scope='session')
-def cluster_version():
-    """Detect the OpenSearch cluster version (session-scoped, runs once)."""
+def ml_tool_availability():
+    """Probe cluster to detect which ML tools are registered (session-scoped)."""
+    if _ml_tool_availability_cache:
+        return _ml_tool_availability_cache
+
     client = _create_os_client()
     try:
-        info = client.info()
-        version_str = info['version']['number']
-        return Version(version_str)
+        for tool_name in ('DataDistributionTool', 'LogPatternAnalysisTool'):
+            try:
+                client.transport.perform_request(
+                    'POST',
+                    f'/_plugins/_ml/tools/_execute/{tool_name}',
+                    body={'parameters': {}},
+                )
+                _ml_tool_availability_cache[tool_name] = True
+            except Exception as e:
+                error_str = str(e)
+                if 'Tool not found' in error_str:
+                    _ml_tool_availability_cache[tool_name] = False
+                else:
+                    # Tool exists but request failed for other reasons (e.g. bad params)
+                    _ml_tool_availability_cache[tool_name] = True
     finally:
         client.close()
 
+    return _ml_tool_availability_cache
+
 
 @pytest.fixture(autouse=True)
-def _check_requires_version(request, cluster_version):
-    """Skip tests marked with @pytest.mark.requires_version if cluster is too old."""
-    marker = request.node.get_closest_marker('requires_version')
+def _check_requires_ml_tool(request, ml_tool_availability):
+    """Skip tests marked with @pytest.mark.requires_ml_tool if tool is not available."""
+    marker = request.node.get_closest_marker('requires_ml_tool')
     if marker is None:
         return
-    required = Version(marker.args[0])
-    if cluster_version < required:
-        pytest.skip(f'Requires OpenSearch {required}+, cluster is {cluster_version}')
+    tool_name = marker.args[0]
+    if not ml_tool_availability.get(tool_name, False):
+        pytest.skip(f'ML tool {tool_name} not registered on this cluster')
 
 
 # ---------------------------------------------------------------------------

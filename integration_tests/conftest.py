@@ -154,8 +154,8 @@ def ml_tool_availability():
                 )
                 _ml_tool_availability_cache[tool_name] = True
             except Exception as e:
-                error_str = str(e)
-                if 'Tool not found' in error_str:
+                error_repr = repr(e)
+                if 'Tool not found' in error_repr or 'Tool not found' in str(getattr(e, 'info', '')):
                     _ml_tool_availability_cache[tool_name] = False
                 else:
                     # Tool exists but request failed for other reasons (e.g. bad params)

@@ -84,9 +84,7 @@ async def wrong_url_server(seed_test_index):
     No auth is configured on the server — auth comes entirely from the
     inline call params, which also proves per-call auth overrides work.
     """
-    server = MCPServerProcess(
-        env={'OPENSEARCH_URL': 'http://does-not-exist.invalid:9200'}
-    )
+    server = MCPServerProcess(env={'OPENSEARCH_URL': 'http://does-not-exist.invalid:9200'})
     await server.start()
     yield server
     await server.stop()
@@ -179,6 +177,5 @@ class TestPreconfiguredMode:
             for tool in tools.tools:
                 props = tool.inputSchema.get('properties', {})
                 assert 'opensearch_cluster_name' not in props, (
-                    f'Tool {tool.name!r} should not expose opensearch_cluster_name '
-                    f'in single mode'
+                    f'Tool {tool.name!r} should not expose opensearch_cluster_name in single mode'
                 )

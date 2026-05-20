@@ -393,7 +393,10 @@ async def get_tools(tool_registry: dict, config_file_path: str = '') -> dict:
     """
     # Inline import to avoid circular dependency at module load time
     # (server_instructions imports clusters_information which is loaded after tools)
-    from mcp_server_opensearch.server_instructions import CONNECTION_OVERRIDE_FIELDS, is_dynamic_mode_enabled
+    from mcp_server_opensearch.server_instructions import (
+        CONNECTION_OVERRIDE_FIELDS,
+        is_dynamic_mode_enabled,
+    )
 
     # Get the current mode from global state
     mode = get_mode()
@@ -410,9 +413,7 @@ async def get_tools(tool_registry: dict, config_file_path: str = '') -> dict:
     # connection setup, and are not supported in multi mode.
     if mode == 'multi':
         filtered_registry = {
-            name: info
-            for name, info in tool_registry.items()
-            if not info.get('memory_tool')
+            name: info for name, info in tool_registry.items() if not info.get('memory_tool')
         }
         for name, info in filtered_registry.items():
             schema = info['input_schema']
@@ -475,9 +476,7 @@ async def get_tools(tool_registry: dict, config_file_path: str = '') -> dict:
         if 'properties' in schema:
             dynamic = is_dynamic_mode_enabled()
             _always_hidden = {'opensearch_cluster_name'}
-            fields_to_strip = _always_hidden | (
-                set() if dynamic else CONNECTION_OVERRIDE_FIELDS
-            )
+            fields_to_strip = _always_hidden | (set() if dynamic else CONNECTION_OVERRIDE_FIELDS)
             for field in fields_to_strip:
                 schema['properties'].pop(field, None)
                 if 'required' in schema and field in schema['required']:

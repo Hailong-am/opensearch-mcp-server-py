@@ -22,6 +22,7 @@ async def serve(
     config_file_path: str = '',
     cli_tool_overrides: dict | None = None,
 ) -> None:
+    """Start the MCP server in stdio mode."""
     # Set the global mode
     set_mode(mode)
 

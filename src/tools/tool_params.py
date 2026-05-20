@@ -6,7 +6,6 @@ from pydantic import BaseModel, Field
 from typing import Any, Dict, Literal, Optional, Type, TypeVar
 
 
-
 T = TypeVar('T', bound=BaseModel)
 
 
@@ -115,6 +114,8 @@ class ListClustersArgs(BaseModel):
 
 
 class ListIndicesArgs(baseToolArgs):
+    """Arguments for the ListIndicesTool."""
+
     index: str = Field(
         default='',
         description='The name of the index or index pattern to get information for.',
@@ -126,17 +127,28 @@ class ListIndicesArgs(baseToolArgs):
 
 
 class GetIndexMappingArgs(baseToolArgs):
+    """Arguments for the GetIndexMappingTool."""
+
     index: str = Field(description='The name of the index to get mapping information for')
 
 
 class SearchIndexArgs(baseToolArgs):
+    """Arguments for the SearchIndexTool."""
+
     index: str = Field(description='The name of the index to search in')
-    query_dsl: Any = Field(description='The search query in OpenSearch query DSL format. For keyword-type fields (mapping shows "type": "keyword"), use field name DIRECTLY - do NOT add .keyword suffix. For text-type fields with .keyword subfields, use the .keyword suffix for exact matches. For date/time range queries, MUST include "format" parameter (commonly "format": "strict_date_optional_time||epoch_millis"), e.g. {"range": {"timestamp": {"gte": "2025-12-29T17:15:12Z", "lte": "2025-12-30T08:15:12Z", "format": "strict_date_optional_time||epoch_millis"}}}; if using non-ISO formats, adjust "format" accordingly.')
+    query_dsl: Any = Field(
+        description='The search query in OpenSearch query DSL format. For keyword-type fields (mapping shows "type": "keyword"), use field name DIRECTLY - do NOT add .keyword suffix. For text-type fields with .keyword subfields, use the .keyword suffix for exact matches. For date/time range queries, MUST include "format" parameter (commonly "format": "strict_date_optional_time||epoch_millis"), e.g. {"range": {"timestamp": {"gte": "2025-12-29T17:15:12Z", "lte": "2025-12-30T08:15:12Z", "format": "strict_date_optional_time||epoch_millis"}}}; if using non-ISO formats, adjust "format" accordingly.'
+    )
     format: str = Field(default='json', description='Output format: "json" or "csv"')
-    size: int = Field(default=10, description='Number of search results to return. The maximum allowed value is 100, unless overridden by configuration.')
+    size: int = Field(
+        default=10,
+        description='Number of search results to return. The maximum allowed value is 100, unless overridden by configuration.',
+    )
 
 
 class GetShardsArgs(baseToolArgs):
+    """Arguments for the GetShardsTool."""
+
     index: str = Field(description='The name of the index to get shard information for')
 
 
@@ -577,12 +589,14 @@ class CreateExperimentArgs(baseToolArgs):
         'POINTWISE_EVALUATION and HYBRID_OPTIMIZER require exactly 1. '
         'Example: ["config-id-1", "config-id-2"]'
     )
-    experiment_type: Literal['PAIRWISE_COMPARISON', 'POINTWISE_EVALUATION', 'HYBRID_OPTIMIZER'] = Field(
-        description=(
-            'Type of experiment: '
-            '"PAIRWISE_COMPARISON" (compares 2 search configurations, no judgment lists required), '
-            '"POINTWISE_EVALUATION" (evaluates 1 configuration against judgment lists), '
-            '"HYBRID_OPTIMIZER" (optimizes 1 configuration using judgment lists)'
+    experiment_type: Literal['PAIRWISE_COMPARISON', 'POINTWISE_EVALUATION', 'HYBRID_OPTIMIZER'] = (
+        Field(
+            description=(
+                'Type of experiment: '
+                '"PAIRWISE_COMPARISON" (compares 2 search configurations, no judgment lists required), '
+                '"POINTWISE_EVALUATION" (evaluates 1 configuration against judgment lists), '
+                '"HYBRID_OPTIMIZER" (optimizes 1 configuration using judgment lists)'
+            )
         )
     )
     size: int = Field(
@@ -640,9 +654,7 @@ _SRW_SEARCH_QUERY_BODY_EXAMPLES = [
 class SearchQuerySetsArgs(baseToolArgs):
     """Arguments for the SearchQuerySetsTool."""
 
-    query_body: Optional[Any] = Field(
-        default=None, description=_SRW_SEARCH_QUERY_BODY_DESCRIPTION
-    )
+    query_body: Optional[Any] = Field(default=None, description=_SRW_SEARCH_QUERY_BODY_DESCRIPTION)
 
     class Config:
         json_schema_extra = {'examples': _SRW_SEARCH_QUERY_BODY_EXAMPLES}
@@ -651,9 +663,7 @@ class SearchQuerySetsArgs(baseToolArgs):
 class SearchSearchConfigurationsArgs(baseToolArgs):
     """Arguments for the SearchSearchConfigurationsTool."""
 
-    query_body: Optional[Any] = Field(
-        default=None, description=_SRW_SEARCH_QUERY_BODY_DESCRIPTION
-    )
+    query_body: Optional[Any] = Field(default=None, description=_SRW_SEARCH_QUERY_BODY_DESCRIPTION)
 
     class Config:
         json_schema_extra = {'examples': _SRW_SEARCH_QUERY_BODY_EXAMPLES}
@@ -662,9 +672,7 @@ class SearchSearchConfigurationsArgs(baseToolArgs):
 class SearchJudgmentsArgs(baseToolArgs):
     """Arguments for the SearchJudgmentsTool."""
 
-    query_body: Optional[Any] = Field(
-        default=None, description=_SRW_SEARCH_QUERY_BODY_DESCRIPTION
-    )
+    query_body: Optional[Any] = Field(default=None, description=_SRW_SEARCH_QUERY_BODY_DESCRIPTION)
 
     class Config:
         json_schema_extra = {'examples': _SRW_SEARCH_QUERY_BODY_EXAMPLES}
@@ -673,9 +681,7 @@ class SearchJudgmentsArgs(baseToolArgs):
 class SearchExperimentsArgs(baseToolArgs):
     """Arguments for the SearchExperimentsTool."""
 
-    query_body: Optional[Any] = Field(
-        default=None, description=_SRW_SEARCH_QUERY_BODY_DESCRIPTION
-    )
+    query_body: Optional[Any] = Field(default=None, description=_SRW_SEARCH_QUERY_BODY_DESCRIPTION)
 
     class Config:
         json_schema_extra = {'examples': _SRW_SEARCH_QUERY_BODY_EXAMPLES}

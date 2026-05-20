@@ -397,9 +397,7 @@ def _initialize_client_multi_mode(cluster_info: ClusterInfo) -> AsyncOpenSearch:
         opensearch_client_cert_path = _normalize_path_value(
             cluster_info.opensearch_client_cert_path
         )
-        opensearch_client_key_path = _normalize_path_value(
-            cluster_info.opensearch_client_key_path
-        )
+        opensearch_client_key_path = _normalize_path_value(cluster_info.opensearch_client_key_path)
 
         # Get max response size from cluster config, fallback to environment variable
         max_response_size = cluster_info.max_response_size

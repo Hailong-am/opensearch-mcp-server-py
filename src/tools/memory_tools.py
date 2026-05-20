@@ -94,11 +94,7 @@ def _get_boto3_session(profile_override: Optional[str] = None):
     import boto3
     from mcp_server_opensearch.global_state import get_profile
 
-    profile = (
-        profile_override
-        or get_profile()
-        or os.getenv('AWS_PROFILE', '').strip()
-    )
+    profile = profile_override or get_profile() or os.getenv('AWS_PROFILE', '').strip()
     try:
         return boto3.Session(profile_name=profile) if profile else boto3.Session()
     except Exception:
@@ -128,7 +124,7 @@ def _get_domain_name_from_url(opensearch_url: str) -> Optional[str]:
         # hostname = search-my-domain-abc123.us-east-1.es.amazonaws.com
         prefix = hostname.split('.')[0]  # search-my-domain-abc123
         if prefix.startswith('search-'):
-            prefix = prefix[len('search-'):]
+            prefix = prefix[len('search-') :]
         # Remove the trailing hash (last segment after the last hyphen that looks like a hash)
         parts = prefix.rsplit('-', 1)
         if len(parts) == 2 and len(parts[1]) >= 10:
@@ -202,7 +198,9 @@ def _get_collection_name(aoss_client, collection_id: str) -> str:
     return details[0]['name']
 
 
-def _ensure_aoss_data_access_policy(session, aoss_client, collection_id: str, region: str, index_name: str) -> None:
+def _ensure_aoss_data_access_policy(
+    session, aoss_client, collection_id: str, region: str, index_name: str
+) -> None:
     """Create or update an AOSS data access policy for the memory index.
 
     Grants the current caller's IAM role access to the specific memory index
@@ -229,9 +227,7 @@ def _ensure_aoss_data_access_policy(session, aoss_client, collection_id: str, re
                 existing_principals.add(p)
 
         if principal_arn in existing_principals:
-            logger.debug(
-                f'AOSS data access policy "{policy_name}" already covers {principal_arn}'
-            )
+            logger.debug(f'AOSS data access policy "{policy_name}" already covers {principal_arn}')
             return
 
         # Principal not covered — add it to the existing policy
@@ -342,8 +338,7 @@ async def _ensure_memory_index(args: baseToolArgs) -> None:
     # getattr with default handles the case where PR #231 is not yet merged and
     # the override fields don't exist on baseToolArgs yet.
     opensearch_url = (
-        getattr(args, 'opensearch_url', None)
-        or os.getenv('OPENSEARCH_URL', '')
+        getattr(args, 'opensearch_url', None) or os.getenv('OPENSEARCH_URL', '')
     ).strip()
 
     # Resolve is_serverless from args or env
@@ -389,7 +384,10 @@ async def _ensure_memory_index(args: baseToolArgs) -> None:
             logger.debug(f'Memory index "{index_name}" already exists (AOSS)')
         except Exception as e:
             error_str = str(e)
-            if 'already exists' in error_str.lower() or 'ResourceAlreadyExistsException' in error_str:
+            if (
+                'already exists' in error_str.lower()
+                or 'ResourceAlreadyExistsException' in error_str
+            ):
                 logger.debug(f'Memory index "{index_name}" already exists (AOSS)')
             else:
                 raise
@@ -412,7 +410,10 @@ async def _ensure_memory_index(args: baseToolArgs) -> None:
             logger.debug(f'Memory index "{index_name}" already exists')
         except Exception as e:
             error_str = str(e)
-            if 'already exists' in error_str.lower() or 'ResourceAlreadyExistsException' in error_str:
+            if (
+                'already exists' in error_str.lower()
+                or 'ResourceAlreadyExistsException' in error_str
+            ):
                 logger.debug(f'Memory index "{index_name}" already exists')
             else:
                 raise
@@ -525,9 +526,7 @@ class SearchMemoryArgs(baseToolArgs):
 class DeleteMemoryArgs(baseToolArgs):
     """Arguments for deleting a memory."""
 
-    memory_id: str = Field(
-        description='The ID of the memory document to delete.'
-    )
+    memory_id: str = Field(description='The ID of the memory document to delete.')
 
     class Config:
         json_schema_extra = {
@@ -640,19 +639,15 @@ async def search_memory_tool(args: SearchMemoryArgs) -> list[dict]:
         if not is_list_all:
             now_ms = int(datetime.now(timezone.utc).timestamp() * 1000)
             offset_hours = (
-                args.recency_offset_hours
-                if args.recency_offset_hours is not None
-                else 24.0
+                args.recency_offset_hours if args.recency_offset_hours is not None else 24.0
             )
             half_life_hours = (
-                args.recency_half_life_hours
-                if args.recency_half_life_hours is not None
-                else 168.0
+                args.recency_half_life_hours if args.recency_half_life_hours is not None else 168.0
             )
             recency_script = (
                 'double relevance = _score;'
                 'long now = params.now_ms;'
-                'long created = doc[\'created_at\'].value.toInstant().toEpochMilli();'
+                "long created = doc['created_at'].value.toInstant().toEpochMilli();"
                 'double ageHours = (now - created) / 3600000.0;'
                 'double decay = Math.exp(-0.693 * Math.max(0, ageHours - params.offset_hours) / params.half_life_hours);'
                 'return relevance * decay;'
@@ -769,7 +764,7 @@ MEMORY_TOOLS_REGISTRY: dict[str, dict[str, Any]] = (
                 'enriched for semantic search. Scope memories using user_id, agent_id, '
                 'and session_id. Add tags for categorization. '
                 'IMPORTANT: Save important facts, decisions, user preferences, and insights '
-                'immediately as they arise during the conversation — don\'t wait until the '
+                "immediately as they arise during the conversation — don't wait until the "
                 'end. Also do a final check before finishing to capture anything missed.'
             ),
             'input_schema': SaveMemoryArgs.model_json_schema(),
@@ -791,7 +786,7 @@ MEMORY_TOOLS_REGISTRY: dict[str, dict[str, Any]] = (
                 'IMPORTANT: Always call this tool at the start of a conversation to check '
                 'for relevant context. Also search memory whenever the user asks about '
                 'bugs, decisions, features, configurations, or any topic that may have '
-                'been previously discussed or worked on — even if they don\'t explicitly '
+                "been previously discussed or worked on — even if they don't explicitly "
                 'reference a prior conversation.'
             ),
             'input_schema': SearchMemoryArgs.model_json_schema(),

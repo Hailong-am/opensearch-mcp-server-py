@@ -30,6 +30,7 @@ async def create_mcp_server(
     config_file_path: str = '',
     cli_tool_overrides: dict | None = None,
 ) -> Server:
+    """Create and configure the MCP server instance."""
     # Set the global mode
     set_mode(mode)
 
@@ -82,7 +83,10 @@ async def create_mcp_server(
 
 
 class MCPStarletteApp:
+    """Starlette application wrapper for the MCP server."""
+
     def __init__(self, mcp_server: Server, stateless: bool = True):
+        """Initialize the MCP Starlette application."""
         self.mcp_server = mcp_server
         self.sse = SseServerTransport('/messages/')
         self.session_manager = StreamableHTTPSessionManager(
@@ -93,6 +97,7 @@ class MCPStarletteApp:
         )
 
     async def handle_sse(self, request: Request) -> Response:
+        """Handle SSE connection requests."""
         async with self.sse.connect_sse(
             request.scope,
             request.receive,
@@ -108,12 +113,13 @@ class MCPStarletteApp:
         return Response()
 
     async def handle_health(self, request: Request) -> Response:
+        """Handle health check requests."""
         return Response('OK', status_code=200)
 
     @contextlib.asynccontextmanager
     async def lifespan(self, app: Starlette) -> AsyncIterator[None]:
-        """
-        Context manager for session manager lifecycle.
+        """Context manager for session manager lifecycle.
+
         Ensures proper startup and shutdown of the session manager.
         """
         from mcp_server_opensearch.logging_config import start_memory_monitor
@@ -136,6 +142,7 @@ class MCPStarletteApp:
         await self.session_manager.handle_request(scope, receive, send)
 
     def create_app(self) -> Starlette:
+        """Create the Starlette application with routes."""
         return Starlette(
             routes=[
                 Route('/sse', endpoint=self.handle_sse, methods=['GET']),
@@ -157,6 +164,7 @@ async def serve(
     cli_tool_overrides: dict | None = None,
     stateless: bool = True,
 ) -> None:
+    """Start the MCP server in streaming HTTP mode."""
     mcp_server = await create_mcp_server(mode, profile, config_file_path, cli_tool_overrides)
     app_handler = MCPStarletteApp(mcp_server, stateless=stateless)
     app = app_handler.create_app()

@@ -383,8 +383,10 @@ class TestConditionalSchemaStripping:
 
     @pytest.mark.asyncio
     async def test_dynamic_mode_with_url_env_var_does_not_mark_required(self):
-        """When OPENSEARCH_DYNAMIC_CONNECTION=true but OPENSEARCH_URL is set,
-        opensearch_url is exposed in schema but NOT required (server has a fallback)."""
+        """When OPENSEARCH_DYNAMIC_CONNECTION=true but OPENSEARCH_URL is set.
+
+        opensearch_url is exposed in schema but NOT required (server has a fallback).
+        """
         os.environ['OPENSEARCH_URL'] = 'https://cluster.example.com'
         os.environ['OPENSEARCH_DYNAMIC_CONNECTION'] = 'true'
         from tools.tool_filter import get_tools

@@ -4,6 +4,7 @@
 import json
 from .agentic_memory.actions import AGENTIC_MEMORY_TOOLS_REGISTRY
 from .generic_api_tool import GenericOpenSearchApiArgs, generic_opensearch_api_tool
+from .memory_tools import MEMORY_TOOLS_REGISTRY
 from .skills_tools import SKILLS_TOOLS_REGISTRY
 from .tool_logging import log_tool_error
 from .tool_params import (
@@ -83,10 +84,6 @@ from opensearch.helper import (
     search_query_sets,
     search_search_configurations,
 )
-from .agentic_memory.actions import AGENTIC_MEMORY_TOOLS_REGISTRY
-from .skills_tools import SKILLS_TOOLS_REGISTRY
-from .memory_tools import MEMORY_TOOLS_REGISTRY
-from mcp_server_opensearch.clusters_information import cluster_registry
 
 
 async def list_clusters_tool(args: ListClustersArgs) -> list[dict]:

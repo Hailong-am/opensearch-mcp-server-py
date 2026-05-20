@@ -64,8 +64,11 @@ def _detect_ides() -> list[str]:
 
 
 def _build_mcp_server_config(
-    opensearch_url: str, aws_region: str, aws_profile: str,
-    from_git: str = '', from_local: str = ''
+    opensearch_url: str,
+    aws_region: str,
+    aws_profile: str,
+    from_git: str = '',
+    from_local: str = '',
 ) -> dict:
     """Build the MCP server configuration block.
 
@@ -330,7 +333,9 @@ def run_install(from_git: str = '', from_local: str = '') -> None:
     print('Step 3: Configuration')
     print('-' * 30)
 
-    mcp_config = _build_mcp_server_config(opensearch_url, aws_region, aws_profile, from_git, from_local)
+    mcp_config = _build_mcp_server_config(
+        opensearch_url, aws_region, aws_profile, from_git, from_local
+    )
     actions = []
 
     for ide_id in detected:
@@ -349,8 +354,13 @@ def run_install(from_git: str = '', from_local: str = '') -> None:
             actions.append(_configure_cursor_mcp(mcp_config))
             # Install Cursor hooks for memory search/save
             from .install_hooks import _install_cursor_hooks
+
             cursor_hook_actions = _install_cursor_hooks('user')
-            actions.extend(cursor_hook_actions if cursor_hook_actions else ['  Cursor hooks already installed.'])
+            actions.extend(
+                cursor_hook_actions
+                if cursor_hook_actions
+                else ['  Cursor hooks already installed.']
+            )
 
     print()
     print('Done!')

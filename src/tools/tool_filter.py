@@ -413,9 +413,7 @@ async def get_tools(tool_registry: dict, config_file_path: str = '') -> dict:
     # connection setup, and are not supported in multi mode.
     if mode == 'multi':
         filtered_registry = {
-            name: info
-            for name, info in tool_registry.items()
-            if not info.get('memory_tool')
+            name: info for name, info in tool_registry.items() if not info.get('memory_tool')
         }
         for name, info in filtered_registry.items():
             schema = info['input_schema']

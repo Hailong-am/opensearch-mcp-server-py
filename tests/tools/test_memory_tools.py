@@ -277,9 +277,7 @@ class TestSearchMemoryTool:
         """Create a mock OpenSearch client for search tests."""
         mock_client = AsyncMock()
         mock_client.indices.exists.return_value = index_exists
-        mock_client.search.return_value = search_response or {
-            'hits': {'hits': []}
-        }
+        mock_client.search.return_value = search_response or {'hits': {'hits': []}}
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=False)
         return mock_client
@@ -287,21 +285,23 @@ class TestSearchMemoryTool:
     @pytest.mark.asyncio
     async def test_search_semantic_query(self):
         """Test semantic search wraps query in script_score."""
-        mock_client = self._make_mock_client({
-            'hits': {
-                'hits': [
-                    {
-                        '_id': 'hit-1',
-                        '_score': 5.0,
-                        '_source': {
-                            'memory_text': 'User likes dark mode',
-                            'created_at': '2026-04-15T10:00:00+00:00',
-                            'user_id': 'alice',
-                        },
-                    }
-                ]
+        mock_client = self._make_mock_client(
+            {
+                'hits': {
+                    'hits': [
+                        {
+                            '_id': 'hit-1',
+                            '_score': 5.0,
+                            '_source': {
+                                'memory_text': 'User likes dark mode',
+                                'created_at': '2026-04-15T10:00:00+00:00',
+                                'user_id': 'alice',
+                            },
+                        }
+                    ]
+                }
             }
-        })
+        )
 
         args = self.SearchMemoryArgs(
             query='dark mode preference',
@@ -326,20 +326,22 @@ class TestSearchMemoryTool:
     @pytest.mark.asyncio
     async def test_search_list_all_no_script_score(self):
         """Test that * query uses match_all without script_score."""
-        mock_client = self._make_mock_client({
-            'hits': {
-                'hits': [
-                    {
-                        '_id': 'hit-1',
-                        '_score': 1.0,
-                        '_source': {
-                            'memory_text': 'Some memory',
-                            'created_at': '2026-04-15T10:00:00+00:00',
-                        },
-                    }
-                ]
+        mock_client = self._make_mock_client(
+            {
+                'hits': {
+                    'hits': [
+                        {
+                            '_id': 'hit-1',
+                            '_score': 1.0,
+                            '_source': {
+                                'memory_text': 'Some memory',
+                                'created_at': '2026-04-15T10:00:00+00:00',
+                            },
+                        }
+                    ]
+                }
             }
-        })
+        )
 
         args = self.SearchMemoryArgs(
             query='*',
@@ -360,9 +362,7 @@ class TestSearchMemoryTool:
     @pytest.mark.asyncio
     async def test_search_empty_query_treated_as_list_all(self):
         """Test that empty string query is treated as list-all."""
-        mock_client = self._make_mock_client({
-            'hits': {'hits': []}
-        })
+        mock_client = self._make_mock_client({'hits': {'hits': []}})
 
         args = self.SearchMemoryArgs(
             query='  ',
@@ -477,24 +477,26 @@ class TestSearchMemoryTool:
     @pytest.mark.asyncio
     async def test_search_result_formatting(self):
         """Test that search results include all expected fields."""
-        mock_client = self._make_mock_client({
-            'hits': {
-                'hits': [
-                    {
-                        '_id': 'mem-1',
-                        '_score': 8.5,
-                        '_source': {
-                            'memory_text': 'Project uses pytest',
-                            'created_at': '2026-04-15T10:00:00+00:00',
-                            'user_id': 'alice',
-                            'agent_id': 'kiro',
-                            'session_id': 'sess-1',
-                            'tags': ['project', 'testing'],
-                        },
-                    }
-                ]
+        mock_client = self._make_mock_client(
+            {
+                'hits': {
+                    'hits': [
+                        {
+                            '_id': 'mem-1',
+                            '_score': 8.5,
+                            '_source': {
+                                'memory_text': 'Project uses pytest',
+                                'created_at': '2026-04-15T10:00:00+00:00',
+                                'user_id': 'alice',
+                                'agent_id': 'kiro',
+                                'session_id': 'sess-1',
+                                'tags': ['project', 'testing'],
+                            },
+                        }
+                    ]
+                }
             }
-        })
+        )
 
         args = self.SearchMemoryArgs(
             query='pytest',
@@ -657,7 +659,10 @@ class TestHelperFunctions:
         from tools.memory_tools import _get_collection_id_from_url
 
         with patch.dict(os.environ, {'AWS_OPENSEARCH_COLLECTION_ID': 'override-id'}):
-            assert _get_collection_id_from_url('https://abc.us-east-1.aoss.amazonaws.com') == 'override-id'
+            assert (
+                _get_collection_id_from_url('https://abc.us-east-1.aoss.amazonaws.com')
+                == 'override-id'
+            )
 
     def test_get_domain_name_from_url(self):
         """Test domain name extraction from managed domain URL."""

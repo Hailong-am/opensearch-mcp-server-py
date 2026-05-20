@@ -19,6 +19,7 @@ Usage:
     opensearch-mcp-server-py install-hooks --client kiro --scope user
 """
 
+import base64 as _base64
 import json
 import logging
 from pathlib import Path
@@ -102,16 +103,16 @@ CLAUDE_CODE_SEARCH_COMMAND = f"echo '{SEARCH_PROMPT}'"
 # Stop hook script: reads stop_hook_active from stdin, only blocks on first stop.
 # Uses python3 -c to parse stdin JSON — no external dependencies needed.
 # The payload is base64-encoded to avoid quoting issues with the JSON content.
-import base64 as _base64
+
 _stop_payload = json.dumps({'decision': 'block', 'reason': SAVE_PROMPT})
 _stop_payload_b64 = _base64.b64encode(_stop_payload.encode()).decode()
 CLAUDE_CODE_STOP_COMMAND = (
-    f"python3 -c \""
-    f"import json,sys,base64; "
-    f"data=json.load(sys.stdin); "
+    f'python3 -c "'
+    f'import json,sys,base64; '
+    f'data=json.load(sys.stdin); '
     f"sys.stdout.write('' if data.get('stop_hook_active') "
     f"else base64.b64decode('{_stop_payload_b64}').decode())"
-    f"\""
+    f'"'
 )
 
 # Claude Code settings.json hook map (nested map keyed by event name).
@@ -254,6 +255,7 @@ def _claude_hooks_already_installed(hooks_map: dict) -> bool:
                     try:
                         import base64
                         import re
+
                         match = re.search(r"b64decode\('([A-Za-z0-9+/=]+)'\)", command)
                         if match:
                             decoded = base64.b64decode(match.group(1)).decode()
@@ -328,6 +330,7 @@ def _cursor_hooks_already_installed(hooks_config: dict) -> bool:
                 try:
                     import base64
                     import re
+
                     match = re.search(r"b64decode\('([A-Za-z0-9+/=]+)'\)", command)
                     if match:
                         decoded = base64.b64decode(match.group(1)).decode()

@@ -6,7 +6,6 @@ import pytest
 from mcp_server_opensearch.install_hooks import (
     KIRO_SAVE_HOOK,
     KIRO_SEARCH_HOOK,
-    CURSOR_HOOKS_CONFIG,
     install_hooks,
 )
 from unittest.mock import patch
@@ -140,10 +139,14 @@ class TestInstallClaudeCodeHooks:
                 {'matcher': 'Write', 'hooks': [{'type': 'command', 'command': 'echo ok'}]}
             ]
         }
-        settings_path.write_text(json.dumps({
-            'model': 'claude-sonnet-4-20250514',
-            'hooks': existing_hooks,
-        }))
+        settings_path.write_text(
+            json.dumps(
+                {
+                    'model': 'claude-sonnet-4-20250514',
+                    'hooks': existing_hooks,
+                }
+            )
+        )
 
         with patch(
             'mcp_server_opensearch.install_hooks._get_claude_settings_path',
@@ -176,11 +179,20 @@ class TestInstallClaudeCodeHooks:
         settings_path = tmp_workspace / '.claude' / 'settings.json'
         settings_path.parent.mkdir(parents=True)
         # Old (incorrect) flat-list format
-        settings_path.write_text(json.dumps({
-            'hooks': [
-                {'event': 'UserPromptSubmit', 'matcher': '', 'type': 'command', 'command': 'echo old'}
-            ]
-        }))
+        settings_path.write_text(
+            json.dumps(
+                {
+                    'hooks': [
+                        {
+                            'event': 'UserPromptSubmit',
+                            'matcher': '',
+                            'type': 'command',
+                            'command': 'echo old',
+                        }
+                    ]
+                }
+            )
+        )
 
         with patch(
             'mcp_server_opensearch.install_hooks._get_claude_settings_path',
@@ -250,12 +262,16 @@ class TestInstallCursorHooks:
         """Install merges into existing hooks.json without overwriting."""
         hooks_path = tmp_workspace / '.cursor' / 'hooks.json'
         hooks_path.parent.mkdir(parents=True)
-        hooks_path.write_text(json.dumps({
-            'version': 1,
-            'hooks': {
-                'afterFileEdit': [{'command': 'echo formatted'}],
-            },
-        }))
+        hooks_path.write_text(
+            json.dumps(
+                {
+                    'version': 1,
+                    'hooks': {
+                        'afterFileEdit': [{'command': 'echo formatted'}],
+                    },
+                }
+            )
+        )
 
         with patch(
             'mcp_server_opensearch.install_hooks._get_cursor_hooks_path',

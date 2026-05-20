@@ -4,10 +4,9 @@
 """Tests for SigV4 auth callable invocation in BufferedAsyncHttpConnection."""
 
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
 from multidict import CIMultiDict
-
 from opensearch.connection import BufferedAsyncHttpConnection
+from unittest.mock import AsyncMock, MagicMock
 
 
 class AsyncIterChunks:
@@ -71,8 +70,7 @@ class TestSigV4AuthCallable:
 
         auth_mock.assert_called_once()
         kwargs = auth_mock.call_args.kwargs
-        assert kwargs.get('body') is None, \
-            'GET request body must be None, not the query string'
+        assert kwargs.get('body') is None, 'GET request body must be None, not the query string'
 
     @pytest.mark.asyncio
     async def test_post_does_not_pass_body_as_headers(self):
@@ -88,10 +86,12 @@ class TestSigV4AuthCallable:
 
         auth_mock.assert_called_once()
         kwargs = auth_mock.call_args.kwargs
-        assert kwargs.get('body') == body, \
+        assert kwargs.get('body') == body, (
             'POST request body must be passed as body to auth callable'
-        assert isinstance(kwargs.get('headers'), dict), \
+        )
+        assert isinstance(kwargs.get('headers'), dict), (
             'headers param must be a dict, not request body bytes'
+        )
 
     @pytest.mark.asyncio
     async def test_auth_callable_uses_keyword_arguments(self):
@@ -102,5 +102,4 @@ class TestSigV4AuthCallable:
 
         auth_mock.assert_called_once()
         # Should be called with keyword args (no positional args beyond self)
-        assert auth_mock.call_args.kwargs, \
-            'Auth callable must be invoked with keyword arguments'
+        assert auth_mock.call_args.kwargs, 'Auth callable must be invoked with keyword arguments'

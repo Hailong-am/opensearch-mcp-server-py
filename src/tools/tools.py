@@ -816,7 +816,6 @@ async def delete_query_set_tool(args: DeleteQuerySetArgs) -> list[dict]:
         await check_tool_compatibility('DeleteQuerySetTool', args)
         result = await delete_query_set(args)
         formatted_result = format_json(result)
-        formatted_result = json.dumps(result, separators=(',', ':'))
         return [
             {'type': 'text', 'text': f'Query set {args.query_set_id} deleted:\n{formatted_result}'}
         ]
@@ -974,7 +973,7 @@ async def delete_experiment_tool(args: DeleteExperimentArgs) -> list[dict]:
     try:
         await check_tool_compatibility('DeleteExperimentTool', args)
         result = await delete_experiment(args)
-        formatted_result = json.dumps(result, separators=(',', ':'))
+        formatted_result = format_json(result)
         return [
             {
                 'type': 'text',

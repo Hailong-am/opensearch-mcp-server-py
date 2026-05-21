@@ -203,7 +203,9 @@ def _extract_field_types_from_mapping(mapping: dict) -> tuple[set[str], set[str]
             continue
         field_type = field_def.get('type', '')
         if field_type == 'text':
-            text_fields.add(field_name)
+            has_keyword = 'keyword' in field_def.get('fields', {})
+            if not has_keyword:
+                text_fields.add(field_name)
         elif field_type in _SKIP_TYPES:
             skip_fields.add(field_name)
     return text_fields, skip_fields

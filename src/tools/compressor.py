@@ -17,11 +17,20 @@ from __future__ import annotations
 
 import json as _json
 import re
+import tiktoken
 from collections import Counter, defaultdict
 from dataclasses import dataclass
+from functools import lru_cache
 
 
 META_TOKEN_PATTERN = re.compile(r'<M\d+>')
+
+_enc = tiktoken.get_encoding('cl100k_base')
+
+
+@lru_cache(maxsize=8192)
+def _count_tokens(text: str) -> int:
+    return len(_enc.encode(text))
 
 
 @dataclass
@@ -101,7 +110,7 @@ def _apply_replacements(
 def _field_level_compress(
     docs: list[dict],
     f_min: int,
-    l_max: int = 10,
+    l_max: int = 15,
     text_fields: set[str] | None = None,
     skip_fields: set[str] | None = None,
 ) -> tuple[list[str], dict[str, str], dict[tuple[str, str], str], set[str], dict]:
@@ -153,7 +162,7 @@ def _field_level_compress(
     value_to_meta: dict[tuple[str, str], str] = {}
     meta_counter = 1
 
-    MIN_CHAR_SAVINGS = 20
+    MIN_TOKEN_SAVINGS = 5
 
     for field in field_order:
         if field in text_fields or field in skip_fields:
@@ -166,8 +175,11 @@ def _field_level_compress(
             if freq < f_min:
                 break
             meta = f'<M{meta_counter}>'
-            char_savings = freq * (len(serialized) - len(meta)) - (len(meta) + 3 + len(serialized))
-            if char_savings < MIN_CHAR_SAVINGS:
+            val_tokens = _count_tokens(serialized)
+            meta_tokens = _count_tokens(meta)
+            # dict entry cost: meta_tokens + val_tokens (for "M# = value" line)
+            token_savings = freq * (val_tokens - meta_tokens) - (meta_tokens + val_tokens)
+            if token_savings < MIN_TOKEN_SAVINGS:
                 continue
             meta_counter += 1
             dictionary[meta] = serialized
@@ -227,10 +239,10 @@ def _field_level_compress(
                 f = len(valid)
                 subseq_str = ' '.join(subseq)
                 meta = f'<M{meta_counter}>'
-                char_savings = f * (len(subseq_str) - len(meta)) - (
-                    len(meta) + 3 + len(subseq_str)
-                )
-                if char_savings < MIN_CHAR_SAVINGS:
+                val_tokens = _count_tokens(subseq_str)
+                meta_tokens = _count_tokens(meta)
+                token_savings = f * (val_tokens - meta_tokens) - (meta_tokens + val_tokens)
+                if token_savings < MIN_TOKEN_SAVINGS:
                     continue
                 meta_counter += 1
                 selected.append((subseq, valid, meta))
@@ -254,13 +266,13 @@ def _field_level_compress(
                 current.append(t)
         result_tokens.append(current)
 
-        # Post-hoc validation: verify net savings for this field.
-        # Whitespace normalization (split/rejoin) can inflate text, so check
-        # actual character cost including dictionary overhead.
-        field_dict_cost = sum(len(m) + 3 + len(v) for m, v in field_dict.items())
-        orig_chars = sum(len(v) for v in all_values)
-        comp_chars = sum(len(' '.join(toks)) for toks in result_tokens) + field_dict_cost
-        if comp_chars >= orig_chars:
+        # Post-hoc validation: verify net token savings for this field.
+        field_dict_tokens = sum(_count_tokens(m) + _count_tokens(v) for m, v in field_dict.items())
+        orig_tokens = sum(_count_tokens(v) for v in all_values)
+        comp_tokens = (
+            sum(_count_tokens(' '.join(toks)) for toks in result_tokens) + field_dict_tokens
+        )
+        if comp_tokens >= orig_tokens:
             for meta in field_dict:
                 del dictionary[meta]
             meta_counter = saved_meta_counter
@@ -275,7 +287,7 @@ def _field_level_compress(
 def compress_docs(
     docs: list[dict],
     f_min: int = 2,
-    l_max: int = 10,
+    l_max: int = 15,
     text_fields: set[str] | None = None,
     skip_fields: set[str] | None = None,
 ) -> CompressionResult:
@@ -325,11 +337,13 @@ def compress_docs(
     original_text = '\n'.join(original_lines)
     compressed_text = '\n'.join(compressed_lines)
 
-    # Use character count as proxy for LLM tokens (word count is unreliable
-    # for JSON because meta-tokens inside strings inflate whitespace splits).
-    original_count = len(original_text)
+    original_count = _count_tokens(original_text)
     dict_text = '\n'.join(f'{m} = {v}' for m, v in dictionary.items())
-    compressed_count = len(compressed_text) + len(dict_text)
+    compressed_count = (
+        _count_tokens(compressed_text) + _count_tokens(dict_text)
+        if dict_text
+        else _count_tokens(compressed_text)
+    )
 
     return CompressionResult(
         compressed_text=compressed_text,
@@ -342,7 +356,7 @@ def compress_docs(
 def compress_tsv_docs(
     docs: list[dict],
     f_min: int = 2,
-    l_max: int = 10,
+    l_max: int = 15,
     text_fields: set[str] | None = None,
     skip_fields: set[str] | None = None,
 ) -> CompressionResult:
@@ -395,9 +409,13 @@ def compress_tsv_docs(
     original_text = '\n'.join(orig_rows)
     compressed_text = '\n'.join(comp_rows)
 
-    original_count = len(original_text)
+    original_count = _count_tokens(original_text)
     dict_text = '\n'.join(f'{m} = {v}' for m, v in dictionary.items())
-    compressed_count = len(compressed_text) + len(dict_text)
+    compressed_count = (
+        _count_tokens(compressed_text) + _count_tokens(dict_text)
+        if dict_text
+        else _count_tokens(compressed_text)
+    )
 
     return CompressionResult(
         compressed_text=compressed_text,

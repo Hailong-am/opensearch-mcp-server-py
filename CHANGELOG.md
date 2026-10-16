@@ -5,6 +5,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Added
+- Add a `size` parameter to `PPLQueryTool` to cap the number of rows returned, mirroring `SearchIndexTool`. Default is 10, maximum is 100 (configurable via `max_size_limit`). Enforced by appending a `| head <size>` stage to the query.
 
 ### Changed
 

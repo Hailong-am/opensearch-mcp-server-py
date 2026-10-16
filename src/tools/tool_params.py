@@ -702,6 +702,9 @@ class PplQueryArgs(baseToolArgs):
     )
     size: int = Field(
         default=10,
+        ge=0,
         description='Maximum number of rows to return. Enforced by appending a "| head <size>" '
-        'stage to the query. The maximum allowed value is 100, unless overridden by configuration.',
+        'stage to the query. The maximum allowed value is 100, unless overridden by configuration. '
+        'Set size to 0 for aggregation queries (e.g. "... | stats count() by field") to return all '
+        'result rows without appending a "| head" stage.',
     )

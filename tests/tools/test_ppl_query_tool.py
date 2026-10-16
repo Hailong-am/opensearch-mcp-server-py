@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import pytest
+from pydantic import ValidationError
 from unittest.mock import AsyncMock, Mock, patch
 
 
@@ -138,6 +139,21 @@ class TestPPLQueryTool:
         assert body == '{"query": "source=my_index | head 25"}'
 
     @pytest.mark.asyncio
+    async def test_ppl_query_size_zero_skips_head(self):
+        """Test that size=0 does not append a '| head' stage (aggregation escape hatch)."""
+        self.mock_client.transport.perform_request.return_value = {'status': 200}
+
+        args = self.PplQueryArgs(
+            opensearch_cluster_name='test',
+            query='source=my_index | stats count() by status',
+            size=0,
+        )
+        await self._ppl_query_tool(args)
+
+        body = self.mock_client.transport.perform_request.call_args[1]['body']
+        assert body == '{"query": "source=my_index | stats count() by status"}'
+
+    @pytest.mark.asyncio
     async def test_ppl_query_size_capped_at_100(self):
         """Test that size is capped at the default max of 100."""
         self.mock_client.transport.perform_request.return_value = {'status': 200}
@@ -176,3 +192,12 @@ class TestPPLQueryTool:
                 TOOL_REGISTRY['PPLQueryTool'].pop('max_size_limit', None)
             else:
                 TOOL_REGISTRY['PPLQueryTool']['max_size_limit'] = original
+
+    def test_ppl_query_negative_size_rejected(self):
+        """Test that a negative size is rejected at validation (ge=0 constraint)."""
+        with pytest.raises(ValidationError):
+            self.PplQueryArgs(
+                opensearch_cluster_name='test',
+                query='source=my_index',
+                size=-1,
+            )
